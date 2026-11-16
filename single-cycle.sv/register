@@ -1,0 +1,13 @@
+module register (
+  input logic [31:0] a,
+  input logic clk, reset,
+  output logic [31:0] y);
+  
+  always_ff @(posedge clk, posedge reset) begin
+    if (reset) begin
+      y <= '0;
+    end else begin
+      y <= a;
+    end
+  end
+endmodule
