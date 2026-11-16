@@ -1,0 +1,9 @@
+module mux_3to1 (
+  input logic [31:0] PCPlus4, ALUResult, PCTarget,
+  input logic [1:0] sel,
+  output logic [31:0] result);
+  
+  always_comb begin
+    result = sel[1] ? {ALUResult[31:1], 1'b0} : ( sel[0] ? PCTarget : PCPlus4 ) ;
+  end
+endmodule
