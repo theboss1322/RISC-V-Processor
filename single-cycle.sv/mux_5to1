@@ -1,0 +1,9 @@
+module mux_5to1 (
+  input logic [31:0] ALUResult, Readdata, PCPlus4, ImmExt, PCTarget,
+  input logic [2:0] sel,
+  output logic [31:0] result);
+  
+  always_comb begin
+    result = sel[2] ? ImmExt : ( sel[1] ? ( sel[0] ? PCTarget : PCPlus4 ) : ( sel[0] ? Readdata : ALUResult ) );
+  end
+endmodule
