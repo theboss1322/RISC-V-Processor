@@ -1,0 +1,7 @@
+module data_memory (
+  input logic [31:0] a, wd,
+  input logic clk, we,
+  output logic [31:0] rd );
+
+always_comb begin
+  
