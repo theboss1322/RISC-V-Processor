@@ -1,0 +1,16 @@
+module extend_unit(
+  input logic [31:7] instr,
+  input logic [2:0] ImmSrc,
+  output logic [31:0] ImmExt );
+  
+  always_comb begin
+    case (ImmSrc)
+      3'b000 : ImmExt = {{20{instr[31]}}, instr[31:20]};  //i-type
+      3'b001 : ImmExt = {{20{instr[31]}}, instr[31:25], instr[11:7]}; //s-type
+      3'b010 : ImmExt = {{20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0}; //b-type
+      3'b011 : ImmExt = {{12{instr[31]}}, instr[21:12], instr[22], instr[30:23], 1'b0}; //j-type
+      3'b100 : ImmExt = {instr[31:12], 12'b0}; //u-type
+      default : ImmExt = 32'bx; 
+    endcase
+  end
+endmodule
