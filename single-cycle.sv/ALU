@@ -1,0 +1,43 @@
+module alu (
+  input logic [31:0] SrcA, SrcB,
+  input logic [3:0] ALUControl,
+  output logic [31:0] ALUResult,
+  output logic zero );
+  
+  logic Cout, V;
+  logic [31:0] b, zero_ext_slt, zero_ext_sltu, sum, shift_out;
+  
+  prefix_adder alu_adder (
+    .a (SrcA),
+    .b (b),
+    .cin (ALUControl[0]),
+    .s (sum),
+    .cout (Cout) );
+  
+  shifter alu_shifter (
+    .a (SrcA),
+    .shift_op (ALUControl[1:0]),
+    .shamt (SrcB[4:0]),
+    .y (shift_out) );
+  
+  always_comb begin
+    b = ALUControl[0] ? ~SrcB : SrcB;
+    V = (SrcA[31] ^ SrcB[31]) & (SrcA[31] ^ sum[31]);
+    zero_ext_slt = {31'b0, sum[31] ^ V};
+    zero_ext_sltu = {31'b0, ~Cout};
+    
+    case (ALUControl)
+      4'b0000 : ALUResult = sum; //add
+      4'b0001 : ALUResult = sum; //sub
+      4'b0011 : ALUResult = zero_ext_slt; //slt
+      4'b0101 : ALUResult = zero_ext_sltu; //sltu
+      4'b0100 : ALUResult = SrcA & SrcB; //and
+      4'b1011 : ALUResult = SrcA | SrcB; //or
+      4'b0110 : ALUResult = SrcA ^ SrcB; //xor
+      4'b1000, 4'b1001, 4'b1010 : ALUResult = shift_out; //sll, srl, sra
+      default : ALUResult = 32'bx; 
+    endcase
+    
+    zero = (ALUResult == 32'b0);
+  end
+endmodule
