@@ -1,0 +1,54 @@
+module prefix_adder #(parameter N = 32) (
+    input  logic [N-1:0] a,
+    input  logic [N-1:0] b,
+    input  logic         cin,
+    output logic [N-1:0] s,
+    output logic         cout
+);
+
+    localparam rows = $clog2(N);
+
+    // 2D arrays: [stage_index][bit_index]
+    logic [N-1:0] prop [0:rows];
+    logic [N-1:0] gen  [0:rows];
+    logic [N:0]   c;
+    int           stride;
+
+    always_comb begin
+        // --- STEP 1: Stage 0 Bit-Level Generate & Propagate ---
+        for (int i = 0; i < N; i++) begin
+            gen[0][i]  = a[i] & b[i];
+            prop[0][i] = a[i] ^ b[i];
+        end
+
+        // --- STEP 2: Kogge-Stone Parallel Prefix Tree ---
+        for (int j = 1; j <= rows; j++) begin
+            stride = 1 << (j - 1);
+            
+            for (int k = 0; k < N; k++) begin
+                if (k >= stride) begin
+                    gen[j][k]  = gen[j-1][k] | (prop[j-1][k] & gen[j-1][k - stride]);
+                    prop[j][k] = prop[j-1][k] & prop[j-1][k - stride];
+                end else begin
+                    gen[j][k]  = gen[j-1][k];
+                    prop[j][k] = prop[j-1][k];
+                end
+            end
+        end
+
+        // --- TODO FOR NEXT TIME ---
+        // STEP 3: Compute carry array 'c' including 'cin'
+      c[0] = cin;
+      
+      for (int x = 0; x < N; x++) begin
+        c[x+1] = gen[rows][x] | (prop[rows][x] & cin);
+      end
+      
+        // STEP 4: Compute final sum 's' and carry-out 'cout'
+      for (int y = 0; y < N; y++) begin
+        s[y] = prop[0][y] ^ c[y];
+      end
+      
+      cout = c[N];
+    end
+endmodule
