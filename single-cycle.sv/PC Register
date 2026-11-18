@@ -1,4 +1,4 @@
-module register (
+module pc_register (
   input logic [31:0] a,
   input logic clk, reset,
   output logic [31:0] y);
