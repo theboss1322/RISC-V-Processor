@@ -1,0 +1,15 @@
+module shifter (
+  input logic [31:0] a,
+  input logic [4:0] shamt,
+  input logic [1:0] shift_op,
+  output logic [31:0] y);
+  
+  always_comb begin
+    case (shift_op)
+      2'b00:   y = a << shamt;
+      2'b01:   y = a >> shamt;
+      2'b10:   y = $signed(a) >>> shamt;
+      default: y = 32'b0;
+    endcase
+  end
+endmodule
