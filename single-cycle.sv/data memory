@@ -1,15 +1,31 @@
 module data_mem (
-  input logic [31:0] a, wd,
+  input logic [31:0] wd,
+  input logic [7:0] a,
   input logic clk, we,
+  input logic [2:0] funct3,
   output logic [31:0] rd);
   
-  logic [31:0] RAM [0:63];
+  logic [7:0] RAM [0:255];
   
-  assign rd = RAM[a[7:2]];
+  always_comb begin
+    case (funct3)
+      3'b000 : rd = {{24{RAM[a][7]}}, RAM[a]}; //lb
+      3'b001 : rd = {{16{RAM[a+1][7]}}, RAM[a+1], RAM[a]}; //lh
+      3'b010 : rd = {RAM[a+3], RAM[a+2], RAM[a+1], RAM[a]}; //lw
+      3'b100 : rd = {24'b0, RAM[a]}; //lbu
+      3'b101 : rd = {16'b0, RAM[a+1], RAM[a]}; //lhu
+      default : rd = 32'b0;
+    endcase
+    
+  end
   
   always_ff @(posedge clk) begin
     if (we) begin
-        RAM[a[7:2]] <= wd;
+      case (funct3)
+        3'b000 : RAM[a] <= wd[7:0]; //sb
+        3'b001 : {RAM[a+1], RAM[a]} <= wd[15:0]; //sh
+        3'b010 : {RAM[a+3], RAM[a+2], RAM[a+1], RAM[a]} <= wd; //sw
+      endcase
     end
   end
 endmodule
