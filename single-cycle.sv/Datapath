@@ -1,0 +1,74 @@
+module datapath (
+  input logic [31:0] Readdata, Instr,
+  input logic [3:0] ALUControl,
+  input logic [2:0] ResultSrc, ImmSrc,
+  input logic [1:0] PCSrc,
+  input logic RegWrite, clk, reset, ALUSrc,
+  output logic [31:0] WriteData, ALUResult, PC,
+  output logic [2:0] funct3,
+  output logic zero );
+  
+  logic [31:0] PCNext, PCPlus4, ImmExt, PCTarget, Result, RD1, RD2, SrcB_mux;
+  
+  assign funct3 = Instr[14:12];
+  
+  pc_register PC_reg (
+    .a (PCNext),
+    .clk (clk),
+    .reset (reset),
+    .y (PC) );
+  
+  pc_adders PCPlus4_adder (
+    .a (PC),
+    .b (32'd4),
+    .y (PCPlus4) );
+  
+  pc_adders PCTarget_adder (
+    .a (PC),
+    .b (ImmExt),
+    .y (PCTarget) );
+  
+  extend_unit Extend_unit (
+    .instr (Instr),
+    .ImmSrc (ImmSrc),
+    .ImmExt (ImmExt) );
+  
+  reg_file Reg_file (
+    .a1 (Instr[19:15]),
+    .a2 (Instr[24:20]),
+    .a3 (Instr[11:7]),
+    .wd (Result),
+    .clk (clk),
+    .we (RegWrite),
+    .rd1 (RD1),
+    .rd2 (WriteData) );
+  
+  alu ALU (
+    .SrcA (RD1),
+    .SrcB (SrcB_mux),
+    .ALUControl (ALUControl),
+    .ALUResult (ALUResult),
+    .zero (zero) );
+  
+  mux_2to1 Mux_2to1 (
+    .a (WriteData),
+    .b (ImmExt),
+    .sel (ALUSrc),
+    .y (SrcB_mux) );
+  
+  mux_3to1 Mux_3to1 (
+    .PCPlus4 (PCPlus4),
+    .PCTarget (PCTarget),
+    .ALUResult (ALUResult),
+    .sel (PCSrc),
+    .result (PCNext) );
+  
+  mux_5to1 Mux_5to1 (
+    .ALUResult (ALUResult),
+    .Readdata (Readdata),
+    .PCPlus4 (PCPlus4),
+    .ImmExt (ImmExt),
+    .PCTarget (PCTarget),
+    .sel (ResultSrc),
+    .result (Result) );
+endmodule
