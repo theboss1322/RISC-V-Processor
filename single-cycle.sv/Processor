@@ -1,0 +1,42 @@
+module processor (
+  input logic clk, reset,
+  input logic [31:0] instr, readdata,
+  output logic [31:0] PC, ALUResult, WriteData,
+  output logic [2:0] funct3,
+  output logic MemWrite );
+  
+  logic [3:0] ALUControl;
+  logic [2:0] ResultSrc, ImmSrc;
+  logic [1:0] PCSrc;
+  logic RegWrite, ALUSrc, zero;
+  
+  controller processor_controller (
+    .instr (instr),
+    .zero (zero),
+    .aluresult (ALUResult[0]),
+    .ALUControl (ALUControl),
+    .ResultSrc (ResultSrc),
+    .ImmSrc (ImmSrc),
+    .PCSrc (PCSrc),
+    .MemWrite (MemWrite),
+    .RegWrite (RegWrite),
+    .ALUSrc (ALUSrc) );
+  
+  datapath processor_datapath (
+    .Readdata (readdata),
+    .Instr (instr),
+    .ALUControl (ALUControl),
+    .ResultSrc (ResultSrc),
+    .ImmSrc (ImmSrc),
+    .PCSrc (PCSrc),
+    .RegWrite (RegWrite),
+    .clk (clk),
+    .reset (reset),
+    .ALUSrc (ALUSrc),
+    .WriteData (WriteData),
+    .ALUResult (ALUResult),
+    .PC (PC),
+    .funct3 (funct3),
+    .zero (zero) );
+  
+endmodule
