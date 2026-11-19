@@ -1,1 +1,32 @@
+module top (
+  input logic clk, reset,
+  output logic [31:0] ALUResult, WriteData,
+  output logic MemWrite );
+  
+  logic [31:0] instr, PC, Readdata;
+  logic [2:0] funct3;
 
+  processor risc_v_processor (
+    .clk (clk),
+    .reset (reset),
+    .instr (instr),
+    .readdata (Readdata),
+    .PC (PC),
+    .ALUResult (ALUResult),
+    .WriteData (WriteData),
+    .funct3 (funct3),
+    .MemWrite (MemWrite) );
+  
+  instr_mem risc_v_imem (
+    .a (PC),
+    .rd (instr) );
+  
+  data_mem risc_v_mem (
+    .wd (WriteData),
+    .a (ALUResult[7:0]),
+    .clk (clk),
+    .we (MemWrite),
+    .funct3 (funct3),
+    .rd (Readdata) );
+  
+endmodule
