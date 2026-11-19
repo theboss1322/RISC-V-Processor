@@ -1,0 +1,34 @@
+module controller (
+  input logic [31:0] instr,
+  input logic zero, aluresult,
+  output logic [3:0] ALUControl,
+  output logic [2:0] ResultSrc, ImmSrc,
+  output logic [1:0] PCSrc,
+  output logic MemWrite, RegWrite, ALUSrc );
+  
+  logic branch;
+  logic [1:0] ALUOp, jump;
+  
+  main_decoder controller_main (
+    .op (instr[6:0]),
+    .funct3 (instr[14:12]),
+    .zero (zero),
+    .ALUResult (aluresult),
+    .ResultSrc (ResultSrc),
+    .ImmSrc (ImmSrc),
+    .MemWrite (MemWrite),
+    .ALUSrc (ALUSrc),
+    .RegWrite (RegWrite),
+    .branch (branch),
+    .ALUOp (ALUOp),
+    .PCSrc (PCSrc),
+    .jump (jump) );
+  
+  alu_decoder controller_alu (
+    .funct3 (instr[14:12]),
+    .ALUOp (ALUOp),
+    .op_5 (instr[5]),
+    .funct7_5 (instr[30]),
+    .ALUControl (ALUControl) );
+  
+endmodule
